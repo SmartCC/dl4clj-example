@@ -6,7 +6,8 @@
             [deeplearning4clj.nn.conf.multi-layer-configuration :as netconf]
             [deeplearning4clj.optimize.listeners :as l]
             [deeplearning4clj.utils.java.keyword-2-java :as k2j])
-  (:import [org.deeplearning4j.nn.api OptimizationAlgorithm]
+  (:import [java.util ArrayList]
+           [org.deeplearning4j.nn.api OptimizationAlgorithm]
            [org.deeplearning4j.nn.conf.distribution UniformDistribution]
            [org.deeplearning4j.nn.conf.layers DenseLayer$Builder OutputLayer OutputLayer$Builder]
            [org.deeplearning4j.nn.multilayer MultiLayerNetwork]
@@ -34,23 +35,24 @@
                                           :weight-init WeightInit/DISTRIBUTION
                                           :dist [(UniformDistribution. 0 1)])
         list-builder (netconf/create-list-builder
-              :iterations 1000
-              :learning-rate 0.1
-              :seed 123
-              :use-drop-connect false
-              :optimization-algo OptimizationAlgorithm/STOCHASTIC_GRADIENT_DESCENT
-              :bias-init 0
-              :mini-batch false)
-        conf (netconf/multi-layer-configuration list-builder
+                      :iterations 10000
+                      :learning-rate 0.1
+                      :seed 123
+                      :use-drop-connect false
+                      :optimization-algo OptimizationAlgorithm/STOCHASTIC_GRADIENT_DESCENT
+                      :bias-init 0
+                      :mini-batch false)
+        conf (netconf/multi-layer-configuration
+              list-builder
               :layer [0 hidden-layer]
               :layer [1 output-layer]
               :pretrain false
               :backprop true)
         listeners (l/create-listeners (ScoreIterationListener. 100))
         net (k2j/doto-keyword-2-java (MultiLayerNetwork. conf)
-             :init nil
-             :set-listeners listeners ;setListeners的参数是一个集合，原示例中是直接设置Listeners，此处设置不成功，需要添加到集合后才能设置
-             :fit ds)]
+                                     init nil
+                                     :set-listeners listeners ;setListeners的参数是一个集合，原代码中是通过不定参数直接设置Listeners，但不定参数对应的是clojure中的数组，自出使用其重载函数，参数是listerners组成的集合
+                                     :fit ds)]
     (-> (doto (evalution/create-evalution 2)
           (evalution/evalution-eval (.getLabels ds) (.getFeatureMatrix ds) net))
         (evalution/evaluation-stats)

@@ -20,11 +20,11 @@
   ([j-object k form]
    (cond
      (nil? form) `(transfer-keyword-2-java-function ~k ~j-object)
-     (sequential? form)  `(transfer-keyword-2-java-function ~k ~j-object ~@form)
+     (vector? form)  `(transfer-keyword-2-java-function ~k ~j-object ~@form)
      :else `(transfer-keyword-2-java-function ~k ~j-object ~form))))
 
 (defmacro ->chain-calls
-  "链式调用多个keyword到java函数的转换，keyword和参数必须一一对应，如果参数是个序列，需要在外层包装一个序列，如(HashMap.)，如果直接作参数会被拆开，做参数是需要写成[(HashMap.)]；无参的函数与keyword的对应值为nil"
+  "链式调用多个keyword到java函数的转换，keyword和参数必须一一对应，如果参数是个序列，需要将参数放在一个vector中（不用序列是因为：参数很可能是一个表达式，也会被检测成为一个序列，如果表达式做参数还需要包一层序列，故用vector），如(HashMap.)，如果直接作参数会被拆开，做参数是需要写成[(HashMap.)]；无参的函数与keyword的对应值为nil"
   [j-object & forms]
   {:pre [(even? (count forms))]}
   (let [forms  (map (fn [[k v]] `(keyword-2-java ~k ~v)) (partition 2 forms))]

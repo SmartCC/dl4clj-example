@@ -29,9 +29,9 @@
         num-epochs 15
         mnist-train (MnistDataSetIterator. batch-size true rng-seed)
         mnist-test (MnistDataSetIterator. batch-size false rng-seed)
-        log (LoggerFactory/getLogger "MLPMnistSingleLayerExample")
+        log (LoggerFactory/getLogger "dl4cljExample.feedforward.minst.MLPMnistSingleLayerExample")
         hidden-layer (layers/create-layer (DenseLayer$Builder.)
-                                          :n-in [(* num-rows num-columns)]
+                                          :n-in (* num-rows num-columns)
                                           :n-out 1000
                                           :activation Activation/RELU
                                           :weight-init WeightInit/XAVIER)
@@ -62,7 +62,7 @@
     (dotimes [_ num-epochs]
       (.fit net mnist-train))
     (.info log "Evaluate Model...")
-    (-> (doto (evalution/create-evalution output-num)
+    (->> (doto (evalution/create-evalution output-num)
           (evalution/evalution-eval mnist-test net))
         (evalution/evaluation-stats)
-        println)))
+        (.info log))))
