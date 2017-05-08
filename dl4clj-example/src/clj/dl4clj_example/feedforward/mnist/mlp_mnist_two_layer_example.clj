@@ -1,17 +1,13 @@
 (ns dl4clj-example.feedforward.mnist.mlp-mnist-two-layer-example
+  (:use [deeplearning4clj.nn.conf.layers]
+        [deeplearning4clj.nn.conf.multi-layer-configuration])
   (:require [deeplearning4clj.eval.evaluation :as evalution]
-            [deeplearning4clj.nd4clj.nd4clj :as nd4clj]
-            [deeplearning4clj.nd4clj.dataset :as dataset]
-            [deeplearning4clj.nn.conf.layers :as layers]
-            [deeplearning4clj.nn.conf.multi-layer-configuration :as netconf]
-            [deeplearning4clj.optimize.listeners :as l]
-            [deeplearning4clj.utils.java.keyword-2-java :as k2j])
+            [deeplearning4clj.optimize.listeners :as l])
   (:import [org.deeplearning4j.datasets.iterator.impl MnistDataSetIterator]
            [org.deeplearning4j.nn.api OptimizationAlgorithm]
            [org.deeplearning4j.nn.conf Updater]
            [org.deeplearning4j.nn.conf.distribution UniformDistribution]
-           [org.deeplearning4j.nn.conf.layers DenseLayer$Builder OutputLayer OutputLayer$Builder]
-           [org.deeplearning4j.nn.multilayer MultiLayerNetwork]
+           [org.deeplearning4j.nn.conf.layers DenseLayer OutputLayer]
            [org.deeplearning4j.nn.weights WeightInit]
            [org.deeplearning4j.optimize.listeners ScoreIterationListener]
            [org.nd4j.linalg.activations Activation]
@@ -31,17 +27,18 @@
         mnist-train (MnistDataSetIterator. batch-size true rng-seed)
         mnist-test (MnistDataSetIterator. batch-size false rng-seed)
         log (LoggerFactory/getLogger "dl4cljExample.feedforward.minstMLPMnistTwoLayerExample")
-        hidden-layer-0 (layers/create-layer (DenseLayer$Builder.)
-                                            :n-in (* num-rows num-columns)
-                                            :n-out 500)
-        hidden-layer-1 (layers/create-layer (DenseLayer$Builder.)
-                                            :n-in 500
-                                            :n-out 100)
-        output-layer (layers/create-layer (OutputLayer$Builder. LossFunctions$LossFunction/NEGATIVELOGLIKELIHOOD)
-                                          :activation Activation/SOFTMAX
-                                          :n-in 100
-                                          :n-out output-num)
-        list-builder (netconf/create-list-builder
+        hidden-layer-0 (deflayer DenseLayer
+                         :n-in (* num-rows num-columns)
+                         :n-out 500)
+        hidden-layer-1 (deflayer DenseLayer
+                         :n-in 500
+                         :n-out 100)
+        output-layer (deflayer OutputLayer
+                       :loss-function LossFunctions$LossFunction/NEGATIVELOGLIKELIHOOD
+                       :activation Activation/SOFTMAX
+                       :n-in 100
+                       :n-out output-num)
+        list-builder (create-list-builder
                       :seed rng-seed
                       :optimization-algo OptimizationAlgorithm/STOCHASTIC_GRADIENT_DESCENT
                       :iterations 1
@@ -52,7 +49,7 @@
                       :momentum 0.98
                       :regularization true
                       :l2  (* rate 0.005))
-        conf (netconf/multi-layer-configuration
+        conf (multi-layer-configuration
               list-builder
               :layer [0 hidden-layer-0]
               :layer [1 hidden-layer-1]
@@ -60,9 +57,9 @@
               :pretrain false
               :backprop true)
         listeners (l/create-listeners (ScoreIterationListener. 5))
-        net (k2j/doto-keyword-2-java (MultiLayerNetwork. conf)
-                                     :init nil
-                                     :set-listeners listeners)]
+        net (def-multi-layer-network conf
+              :init nil
+              :set-listeners listeners)]
     (.info log "Train Model ... ")
     (dotimes [i num-epochs]
       (.info log (str "Epoch " i))

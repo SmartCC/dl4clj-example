@@ -45,7 +45,7 @@
 (def n-cores 2)
 (def save false)
 
-(def model-type "AlexNet") ;使用的模型
+(def model-type "LaNet") ;使用的模型
 
 (defn conv-init
   "卷积层初始化"
@@ -225,7 +225,7 @@
         listeners (l/create-listeners (ScoreIterationListener. listener-freq))
         net (k2j/doto-keyword-2-java
              (case model-type
-               "LeNet" (lanet-model)
+               "LaNet" (lanet-model)
                "AlexNet" (alexnet-model)
                "custom" (custom-model)
                (throw (InvalidInputTypeException. "Incorrect model provided.")))
