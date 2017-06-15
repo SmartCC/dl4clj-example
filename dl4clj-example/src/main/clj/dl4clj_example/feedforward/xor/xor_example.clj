@@ -1,13 +1,11 @@
 (ns dl4clj-example.feedforward.xor.xor-example
   (:use [deeplearning4clj.nd4clj.dataset]
-        [deeplearning4clj.nn.conf.layers]
-        [deeplearning4clj.nn.conf.multi-layer-configuration])
+        [deeplearning4clj.nn.conf layers multi-layer-configuration])
   (:require [deeplearning4clj.eval.evaluation :as evalution]
             [deeplearning4clj.optimize.listeners :as l])
   (:import [org.deeplearning4j.nn.api OptimizationAlgorithm]
            [org.deeplearning4j.nn.conf.distribution UniformDistribution]
            [org.deeplearning4j.nn.conf.layers DenseLayer OutputLayer]
-           [org.deeplearning4j.nn.multilayer MultiLayerNetwork]
            [org.deeplearning4j.nn.weights WeightInit]
            [org.deeplearning4j.optimize.listeners ScoreIterationListener]
            [org.nd4j.linalg.activations Activation]

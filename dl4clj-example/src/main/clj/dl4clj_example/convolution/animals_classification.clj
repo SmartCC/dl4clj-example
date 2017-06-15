@@ -45,7 +45,7 @@
 (def n-cores 2)
 (def save false)
 
-(def model-type "LaNet") ;使用的模型
+(def model-type "AlexNet") ;使用的模型
 
 (defn conv-init
   "卷积层初始化"
@@ -194,7 +194,7 @@
   []
   nil)
 
-(defn- *data-iter-2-record-iter*
+(defn- data-iter-2-record-iter!
   "数据迭代器转换为record迭代器"
   [record-reader train-data transform scaler batch-size num-labels]
   (do (.initialize record-reader train-data transform)
@@ -203,10 +203,10 @@
         (.setPreProcessor data-iter scaler)
         data-iter)))
 
-(defn- *record-reader-init-scale-fit*
+(defn- record-reader-init-scale-fit!
   "RecordReader读取，缩放和模型训练"
   [record-reader train-data transform scaler net batch-size num-labels epochs n-cores]
-  (let [data-iter (*data-iter-2-record-iter* record-reader train-data transform scaler batch-size num-labels)]
+  (let [data-iter (data-iter-2-record-iter! record-reader train-data transform scaler batch-size num-labels)]
     (.fit net (MultipleEpochsIterator. epochs data-iter n-cores))))
 
 
@@ -233,12 +233,12 @@
              :set-listeners listeners)
         record-reader (ImageRecordReader. height width channels label-maker)]
     (.info log "Train model ...")
-    (*record-reader-init-scale-fit* record-reader train-data nil scaler net batch-size num-labels epochs n-cores)
+    (record-reader-init-scale-fit! record-reader train-data nil scaler net batch-size num-labels epochs n-cores)
     (doseq [transform transforms]
       (.info log (str "Training on transformation: " (class transform)))
-      (*record-reader-init-scale-fit* record-reader train-data nil scaler net batch-size num-labels epochs n-cores))
+      (record-reader-init-scale-fit! record-reader train-data nil scaler net batch-size num-labels epochs n-cores))
     (.info log "Evaluate model ...")
-    (->> (*data-iter-2-record-iter* record-reader test-data nil scaler batch-size num-labels)
+    (->> (data-iter-2-record-iter! record-reader test-data nil scaler batch-size num-labels)
          (.evaluate net)
          #(.stats % true)
          (.info log))))
